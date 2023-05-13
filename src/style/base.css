@@ -1,0 +1,48 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    position: relative;
+    font-weight: normal;
+    font-family: TradeWindsRegular;
+}
+img {
+    width: 100%;
+}
+a {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    outline: none;
+}
+body {
+    min-height: 100vh;
+    color: var(--color-text);
+    background: var(--color-background);
+    transition: color 0.5s, background-color 0.5s;
+    line-height: 1.6;
+    font-family: TradeWindsRegular;
+    font-size: 18px;
+    font-weight: 400;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #000;
+    color: rgb(255, 255, 255);
+}
+
+@font-face {
+    font-family: TradeWindsRegular;
+    src: url('../image/TradeWinds-Regular.ttf');
+}
+/* 
+html {
+    font-size: 50px;
+}
+
+@media screen and (min-width:320px) {
+    html {
+        font-size: 50px;
+        font-size: 10000vw / 750;
+    }
+} */
