@@ -88,8 +88,7 @@ import Header from "./components/Header.vue";
 import Footer from "./components/Footer.vue";
 import { urlJson } from "./url";
 import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.2.3/ethers.js";
-import Web3 from "web3";
-import abi from "./abi.json";
+
 
 function startApp(provider) {
   if (provider !== window.ethereum) {
@@ -106,7 +105,6 @@ export default {
     };
   },
   created() {
-    this.createProvider();
     window.ethereum.on("accountsChanged", () => {
       this.isQualified = true;
     });
@@ -115,46 +113,32 @@ export default {
     getSigner(val) {
       this.signer = val;
     },
-    async createProvider() {
-      let _this = this;
-      var web3Provider;
-      if (window.ethereum) {
-        web3Provider = window.ethereum;
-        try {
-          window.ethereum.enable().then(function () {
-            //  _this.account1();
-          });
-        } catch (error) {
-          console.error("User denied account access");
-        }
-      } else if (window.web3) {
-        web3Provider = window.web3.currentProvider;
-      } else {
-        web3Provider = new Web3.providers.HttpProvider("http://localhost:8545");
-      }
-      web3 = new Web3(web3Provider);
-    },
     async toCLAIM() {
-      const account = await web3.eth.getAccounts();
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const { chainId } = await provider.getNetwork();
+      const signer = await provider.getSigner();
       const CLAIMContractAddress = "0x57ccb824f5D1F058DfC4613cED6f8E3b6041BF3b";
-      const contractRelationship = new window.web3.eth.Contract(abi, CLAIMContractAddress);
-      window.contractRelationship = contractRelationship;
-      const chainId = await web3.eth.net.getId();
+      const contractAbi = [
+        "function claim(address referrer) public",
+        "function noFoMoToken()public view returns(address)",
+        "function isClaimedAddress(address _addr) public view returns(bool)",
+      ];
+      const claimContract = new ethers.Contract(CLAIMContractAddress, contractAbi, signer);
       if (chainId != 324) {
         this.isQualified = false;
         this.$toast("Wrong Network");
       }
-      if (await contractRelationship.methods.isClaimedAddress(account[0]).call({ from: account[0] })) {
+      if (await claimContract.isClaimedAddress(signer.address)) {
         this.isQualified = false;
         this.$toast("Not Qualified");
       }
       let referrerAddr = "0x0000000000000000000000000000000000000000";
-      if (location.search && location.search[0] != '?') {
+      if (location.search && location.search[0] != "?") {
         referrerAddr = location.search.replace("?r=", "");
       }
       if (this.isQualified) {
-        let tx = await contractRelationship.methods.claim(referrerAddr).send({ from: account[0] });
-        this.$toast(tx);
+        await claimContract.claim(referrerAddr)
       }
     },
     async getINVITE() {
